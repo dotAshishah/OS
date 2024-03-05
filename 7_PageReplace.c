@@ -1,78 +1,146 @@
-#include <stdlib.h>
-#include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-struct
+void FIFO(char[], char[], int, int);
+void LRU(char[], char[], int, int);
+int main()
 {
-    char dname[10];
-    char fname[10][10];
-    int fcnt;
-} dir;
+    int ch, YN = 1, i, l, f;
+    char F[10], s[25];
 
-void main()
-{
-    int i, ch;
-    char f[30];
-    dir.fcnt = 0;
+    printf("\n\n\tEnter the no of empty frames: ");
+    scanf("%d", &f);
 
-    printf("\nEnter name of directory -- ");
-    scanf("%s", dir.dname);
+    printf("\n\n\tEnter the length of the string: ");
+    scanf("%d", &l);
 
-    while (1)
+    printf("\n\n\tEnter the string: ");
+    scanf("%s", s);
+
+    for (i = 0; i < f; i++)
+        F[i] = -1;
+
+    do
     {
-        printf("\n\n1. Create File\t2. Delete File\t3. Search File\n4. Display Files\t5. Exit\nEnter your choice -- ");
+        printf("\n\n\t********** MENU **********");
+        printf("\n\n\t1: FIFO\n\n\t2: LRU\n\n\t3: EXIT");
+        printf("\n\n\tEnter your choice: ");
         scanf("%d", &ch);
 
         switch (ch)
         {
         case 1:
-            printf("\nEnter the name of the file -- ");
-            scanf("%s", dir.fname[dir.fcnt]);
-            dir.fcnt++;
+            for (i = 0; i < f; i++)
+                F[i] = -1;
+            FIFO(s, F, l, f);
             break;
         case 2:
-            printf("\nEnter the name of the file -- ");
-            scanf("%s", f);
-            for (i = 0; i < dir.fcnt; i++)
-            {
-                if (strcmp(f, dir.fname[i]) == 0)
-                {
-                    printf("File %s is deleted ", f);
-                    strcpy(dir.fname[i], dir.fname[dir.fcnt - 1]);
-                    break;
-                }
-            }
-            if (i == dir.fcnt)
-                printf("File %s not found", f);
-            else
-                dir.fcnt--;
+            for (i = 0; i < f; i++)
+                F[i] = -1;
+            LRU(s, F, l, f);
             break;
         case 3:
-            printf("\nEnter the name of the file -- ");
-            scanf("%s", f);
-            for (i = 0; i < dir.fcnt; i++)
-            {
-                if (strcmp(f, dir.fname[i]) == 0)
-                {
-                    printf("File %s is found ", f);
-                    break;
-                }
-            }
-            if (i == dir.fcnt)
-                printf("File %s not found", f);
-            break;
-        case 4:
-            if (dir.fcnt == 0)
-                printf("\nDirectory Empty");
-            else
-            {
-                printf("\nThe Files are -- ");
-                for (i = 0; i < dir.fcnt; i++)
-                    printf("\t%s", dir.fname[i]);
-            }
-            break;
-        default:
             exit(0);
         }
+        printf("\n\n\tDo you want to continue? If YES, PRESS 1\n\n\tIf NO, PRESS 0: ");
+        scanf("%d", &YN);
+    } while (YN == 1);
+
+    return 0;
+}
+
+// FIFO algorithm
+void FIFO(char s[], char F[], int l, int f)
+{
+    int i, j = 0, k, flag = 0, cnt = 1;
+
+    printf("\n\tPAGE\t FRAMES\t FAULTS");
+
+    for (i = 0; i < l; i++)
+    {
+        for (k = 0; k < f; k++)
+        {
+            if (F[k] == s[i])
+                flag = 1;
+        }
+
+        if (flag == 0)
+        {
+            printf("\n\t%c\t", s[i]);
+            F[j] = s[i];
+            j++;
+
+            for (k = 0; k < f; k++)
+                printf(" %c", F[k]);
+
+            printf("\tPage-fault %d", cnt);
+            cnt++;
+        }
+        else
+        {
+            flag = 0;
+            printf("\n\t%c\t", s[i]);
+
+            for (k = 0; k < f; k++)
+                printf(" %c", F[k]);
+
+            printf("\tNo page-fault");
+        }
+        if (j == f)
+            j = 0;
+    }
+}
+
+// LRU algorithm
+void LRU(char s[], char F[], int l, int f)
+{
+    int i, j = 0, k, m, flag = 0, cnt = 1, top = 0;
+
+    printf("\n\tPAGE\t FRAMES\t FAULTS");
+
+    for (i = 0; i < l; i++)
+    {
+        for (k = 0; k < f; k++)
+        {
+            if (F[k] == s[i])
+            {
+                flag = 1;
+                break;
+            }
+        }
+
+        printf("\n\t%c\t", s[i]);
+
+        if (j != f && flag != 1)
+        {
+            F[top] = s[i];
+            j++;
+            if (j != f)
+                top++;
+        }
+        else
+        {
+            if (flag != 1)
+            {
+                for (k = 0; k < top; k++)
+                    F[k] = F[k + 1];
+                F[top] = s[i];
+            }
+
+            if (flag == 1)
+                for (m = k; m < top; m++)
+                    F[m] = F[m + 1];
+            F[top] = s[i];
+        }
+        for (k = 0; k < f; k++)
+            printf(" %c", F[k]);
+
+        if (flag == 0)
+            printf("\tPage-fault %d", cnt++);
+
+        else
+            printf("\tNo page-fault");
+
+        flag = 0;
     }
 }
